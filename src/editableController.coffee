@@ -26,13 +26,6 @@ class EditableController extends Controller
   _movingEvent: (e) ->
     e.type == 'click' or e.which in [KEY_CODE.RIGHT, KEY_CODE.LEFT, KEY_CODE.UP, KEY_CODE.DOWN]
 
-  _unwrap: (node) ->
-    node = $(node).unwrap().get 0
-    if (next = node.nextSibling) and next.nodeValue
-      node.nodeValue += next.nodeValue
-      $(next).remove()
-    node
-
   catchQuery: (e) ->
     return unless range = @_getRange()
     return unless range.collapsed
@@ -129,7 +122,25 @@ class EditableController extends Controller
         if @_movingEvent(e) and $query.hasClass 'atwho-inserted'
           $query.removeClass('atwho-query')
         else if false != @callbacks('afterMatchFailed').call this, @at, $query
-          @_setRange "after", @_unwrap $query.text($query.text()).contents().first()
+          # -------------------------------------------------------------------
+          # FIX START
+          #
+          # This section fixes https://zendesk.atlassian.net/browse/AI-4229
+          #
+          # This code does the following:
+          #
+          # 1. Memorize the current parent element of the query element (span)
+          # 2. Extract the query element content and remove the query element so
+          #    that only the content is left in its place
+          # 3. Put the carret after the content
+          # 4. Sew up the fragmented text nodes using parentNode.normalize();
+          # -------------------------------------------------------------------
+          parentNode = $query[0].parentNode
+          @_setRange "after", $query.text($query.text()).contents().first().unwrap()
+          parentNode.normalize()
+          # -------------------------------------------------------------------
+          # FIX END
+          # -------------------------------------------------------------------
       null
 
   # Get offset of current at char(`flag`)

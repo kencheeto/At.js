@@ -19,9 +19,39 @@ class View
 
   bindEvent: ->
     $menu = @$el.find('ul')
-    $menu.on 'mouseenter.atwho-view','li', (e) ->
+    # -------------------------------------------------------------------------
+    # FIX START
+    #
+    # https://zendesk.atlassian.net/browse/AI-4215
+    #
+    # Navigating with the keyboard through the menu may cause its scrolling
+    # which in turn may trigger a mousemove/mouseenter/mouseover event without
+    # actually moving the mouse.
+    #
+    # With the fix, the system memorizes the last actual position of the mouse
+    # and if a mouse event fires while the mouse position hasn't changed, the
+    # event must have been triggered by movement of the LI elements (not the
+    # mouse itself).
+    #
+    # The "mousemove" event is used instead of the "mouseenter", as "mousemove"
+    # allows for the immediate tracking of the mouse move after menu scrolling.
+    # If "mouseenter" is used, when moving the mouse over the item over which
+    # the mouse pointer is already positioned then the event won't fire.
+    # -------------------------------------------------------------------------
+    lastCoordX = 0
+    lastCoordY = 0
+    $menu.on 'mousemove.atwho-view','li', (e) ->
+      # If the mouse hasn't actually moved then exit.
+      return if lastCoordsX == e.clientX and lastCoords.y == e.clientY
+      lastCoordsX = e.clientX
+      lastCoordsY = e.clientY
+      $cur = $(e.currentTarget)
+      return if $cur.hasClass('cur')
       $menu.find('.cur').removeClass 'cur'
-      $(e.currentTarget).addClass 'cur'
+      $cur.addClass 'cur'
+    # -------------------------------------------------------------------------
+    # FIX END
+    # -------------------------------------------------------------------------
     .on 'click.atwho-view', 'li', (e) =>
       $menu.find('.cur').removeClass 'cur'
       $(e.currentTarget).addClass 'cur'
