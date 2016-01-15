@@ -40,11 +40,11 @@ class View
     # -------------------------------------------------------------------------
     lastCoordX = 0
     lastCoordY = 0
-    $menu.on 'mousemove.atwho-view','li', (e) ->
+    $menu.on 'mousemove.atwho-view','li', (e) =>
       # If the mouse hasn't actually moved then exit.
-      return if lastCoordsX == e.clientX and lastCoords.y == e.clientY
-      lastCoordsX = e.clientX
-      lastCoordsY = e.clientY
+      return if lastCoordX == e.clientX and lastCoordY == e.clientY
+      lastCoordX = e.clientX
+      lastCoordY = e.clientY
       $cur = $(e.currentTarget)
       return if $cur.hasClass('cur')
       $menu.find('.cur').removeClass 'cur'
